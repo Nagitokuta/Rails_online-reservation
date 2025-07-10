@@ -1,0 +1,289 @@
+<!-- app/views/yoga_classes/show.html.erb -->
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <!-- パンくずナビ -->
+      <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><%= link_to "ホーム", root_path %></li>
+          <li class="breadcrumb-item"><%= link_to "クラス一覧", root_path %></li>
+          <li class="breadcrumb-item active" aria-current="page"><%= @yoga_class.name %></li>
+        </ol>
+      </nav>
+      <!-- メインカード -->
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h3 class="card-title mb-0">
+            <i class="fas fa-om me-2"></i><%= @yoga_class.name %>
+          </h3>
+        </div>
+        <div class="card-body">
+          <!-- 基本情報 -->
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <h5 class="text-primary mb-3">
+                <i class="fas fa-info-circle me-2"></i>基本情報
+              </h5>
+              <table class="table table-borderless">
+                <tr>
+                  <td class="fw-bold text-muted" style="width: 30%;">日時</td>
+                  <td><%= @yoga_class.start_time.strftime("%Y年%m月%d日 %H:%M") %></td>
+                </tr>
+                <tr>
+                  <td class="fw-bold text-muted">講師</td>
+                  <td><%= @yoga_class.instructor %></td>
+                </tr>
+                <tr>
+                  <td class="fw-bold text-muted">定員</td>
+                  <td><%= @yoga_class.capacity %>名</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold text-muted">予約状況</td>
+                  <td>
+                    <span class="badge bg-<%= @yoga_class.full? ? 'danger' : 'success' %>">
+                      <%= @yoga_class.reserved_count %>/<%= @yoga_class.capacity %>名
+                    </span>
+                    <% unless @yoga_class.full? %>
+                      <small class="text-muted ms-2">残り<%= @yoga_class.available_spots %>席</small>
+                    <% end %>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <div class="col-md-6">
+              <!-- 予約状況の視覚的表示 -->
+              <h5 class="text-primary mb-3">
+                <i class="fas fa-chart-pie me-2"></i>予約状況
+              </h5>
+              <div class="progress mb-3" style="height: 25px;">
+                <% reservation_percentage = (@yoga_class.reserved_count.to_f / @yoga_class.capacity * 100).round %>
+                <div class="progress-bar bg-<%= reservation_percentage >= 80 ? 'danger' : 'success' %>" 
+                     role="progressbar" 
+                     style="width: <%= reservation_percentage %>%"
+                     aria-valuenow="<%= reservation_percentage %>" 
+                     aria-valuemin="0" 
+                     aria-valuemax="100">
+                  <%= reservation_percentage %>%
+                </div>
+              </div>
+              <!-- 予約ステータス -->
+              <% if @is_reserved %>
+                <div class="alert alert-success" role="alert">
+                  <i class="fas fa-check-circle me-2"></i>
+                  このクラスを予約済みです
+                </div>
+              <% elsif @yoga_class.full? %>
+                <div class="alert alert-danger" role="alert">
+                  <i class="fas fa-times-circle me-2"></i>
+                  このクラスは満席です
+                </div>
+              <% else %>
+                <div class="alert alert-info" role="alert">
+                  <i class="fas fa-info-circle me-2"></i>
+                  予約可能です
+                </div>
+              <% end %>
+            </div>
+          </div>
+          <!-- クラス説明 -->
+          <div class="mb-4">
+            <h5 class="text-primary mb-3">
+              <i class="fas fa-file-alt me-2"></i>クラス内容
+            </h5>
+            <div class="bg-light p-3 rounded">
+              <p class="mb-0"><%= simple_format(@yoga_class.description) %></p>
+            </div>
+          </div>
+          <!-- アクションボタン -->
+          <div class="d-flex flex-wrap gap-2 justify-content-center">
+            <% if @is_reserved %>
+              <!-- 予約済みの場合 -->
+              <% case @yoga_class.live_status %>
+              <% when 'not_started' %>
+                <% if @yoga_class.should_start_soon? %>
+                  <button class="btn btn-warning btn-lg" disabled>
+                    <i class="fas fa-clock me-2"></i>配信開始まで待機中
+                  </button>
+                <% else %>
+                  <button class="btn btn-secondary btn-lg" disabled>
+                    <i class="fas fa-calendar me-2"></i>配信予定
+                  </button>
+                <% end %>
+              <% when 'waiting' %>
+                <button class="btn btn-info btn-lg" disabled>
+                  <i class="fas fa-hourglass-half me-2"></i>配信準備中
+                </button>
+              <% when 'live' %>
+                <%= link_to live_yoga_class_path(@yoga_class), class: "btn btn-success btn-lg" do %>
+                  <i class="fas fa-video me-2"></i>ライブ配信に参加
+                  <% if @yoga_class.current_participants_count > 0 %>
+                    <span class="badge bg-light text-dark ms-2"><%= @yoga_class.current_participants_count %>名参加中</span>
+                  <% end %>
+                <% end %>
+              <% when 'ended' %>
+                <button class="btn btn-secondary btn-lg" disabled>
+                  <i class="fas fa-stop me-2"></i>配信終了
+                </button>
+              <% when 'cancelled' %>
+                <button class="btn btn-danger btn-lg" disabled>
+                  <i class="fas fa-times me-2"></i>配信キャンセル
+                </button>
+              <% end %>
+              <%= link_to reservation_path(@user_reservation), 
+                method: :delete, 
+                class: "btn btn-outline-danger",
+                data: { 
+                  confirm: "#{@yoga_class.name}の予約をキャンセルしますか？" 
+                } do %>
+                <i class="fas fa-times me-2"></i>予約をキャンセル
+              <% end %>
+            <% elsif @can_reserve %>
+              <!-- 予約可能な場合 -->
+              <%= button_to reservations_path, 
+                  params: { yoga_class_id: @yoga_class.id },
+                  method: :post, 
+                  class: "btn btn-primary btn-lg",
+                  data: { 
+                    confirm: "#{@yoga_class.name}を予約しますか？" 
+                  } do %>
+                <i class="fas fa-calendar-plus me-2"></i>このクラスを予約する
+              <% end %>
+            <% else %>
+              <!-- 予約不可の場合 -->
+              <button class="btn btn-secondary btn-lg" disabled>
+                <i class="fas fa-ban me-2"></i>予約できません
+              </button>
+            <% end %>
+            <!-- ナビゲーションボタン -->
+            <%= link_to root_path, class: "btn btn-outline-secondary" do %>
+              <i class="fas fa-list me-2"></i>クラス一覧に戻る
+            <% end %>
+            <%= link_to calendar_path, class: "btn btn-outline-secondary" do %>
+              <i class="fas fa-calendar me-2"></i>カレンダーに戻る
+            <% end %>
+          </div>
+          <!-- 関連情報 -->
+          <div class="row mt-4">
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header">
+                  <h6 class="card-title mb-0">
+                    <i class="fas fa-user me-2"></i>講師について
+                  </h6>
+                </div>
+                <div class="card-body">
+                  <p class="card-text">
+                    <%= @yoga_class.instructor %>講師によるクラスです。
+                    <br>
+                    <small class="text-muted">※講師の詳細情報は今後追加予定です</small>
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header">
+                  <h6 class="card-title mb-0">
+                    <i class="fas fa-clock me-2"></i>注意事項
+                  </h6>
+                </div>
+                <div class="card-body">
+                  <ul class="list-unstyled mb-0">
+                    <li><i class="fas fa-check text-success me-2"></i>開始1時間前まで予約可能</li>
+                    <li><i class="fas fa-check text-success me-2"></i>開始1時間前まで予約キャンセル可能</li>
+                    <li><i class="fas fa-check text-success me-2"></i>ライブ配信は開始時刻から参加可能</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          <% if @yoga_class.feedback_count > 0 %>
+            <div class="row mt-4">
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h6 class="card-title mb-0">
+                      <i class="fas fa-star me-2 text-warning"></i>評価情報
+                    </h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <div class="me-3">
+                        <div class="display-6 fw-bold text-warning"><%= @yoga_class.average_rating %></div>
+                        <div class="text-muted small">平均評価</div>
+                      </div>
+                      <div class="flex-grow-1">
+                        <div class="text-warning mb-1">
+                          <%= "★" * @yoga_class.average_rating.round %>
+                          <%= "☆" * (5 - @yoga_class.average_rating.round) %>
+                        </div>
+                        <div class="text-muted small"><%= @yoga_class.feedback_count %>件のフィードバック</div>
+                      </div>
+                    </div>
+                    <!-- 評価分布 -->
+                    <% @yoga_class.rating_distribution.each do |dist| %>
+                      <div class="d-flex align-items-center mb-1">
+                        <div class="me-2" style="width: 60px;">
+                          <small><%= dist[:rating] %>★</small>
+                        </div>
+                        <div class="flex-grow-1 me-2">
+                          <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-warning" 
+                       style="width: <%= dist[:percentage] %>%"></div>
+                          </div>
+                        </div>
+                        <div style="width: 40px;">
+                          <small class="text-muted"><%= dist[:count] %>件</small>
+                        </div>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h6 class="card-title mb-0">
+                      <i class="fas fa-comments me-2 text-info"></i>最新のフィードバック
+                    </h6>
+                  </div>
+                  <div class="card-body">
+                    <% @yoga_class.feedbacks.recent.limit(3).each do |feedback| %>
+                      <div class="border-bottom pb-2 mb-2">
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                          <div class="text-warning">
+                            <%= "★" * feedback.rating %>
+                            <%= "☆" * (5 - feedback.rating) %>
+                          </div>
+                          <small class="text-muted">
+                            <%= feedback.created_at.strftime("%Y/%m/%d") %>
+                          </small>
+                        </div>
+                        <p class="mb-0 small">
+                          <%= truncate(feedback.comment, length: 100) %>
+                        </p>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+          <!-- フィードバック送信ボタン -->
+          <% if @is_reserved %>
+            <div class="mt-3">
+              <% if current_user.has_feedback_for?(@yoga_class) %>
+                <div class="alert alert-success" role="alert">
+                  <i class="fas fa-check-circle me-2"></i>
+                  フィードバック送信済みです
+                </div>
+              <% elsif @yoga_class.start_time < Time.current %>
+                <%= link_to new_yoga_class_feedback_path(@yoga_class), class: "btn btn-outline-primary" do %>
+                  <i class="fas fa-comment-dots me-2"></i>フィードバックを送信
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>

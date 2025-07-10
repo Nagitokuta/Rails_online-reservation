@@ -1,0 +1,283 @@
+<!-- app/views/yoga_classes/live.html.erb -->
+<div class="container-fluid">
+  <!-- ヘッダー部分 -->
+  <div class="row bg-danger text-white py-2 mb-4">
+    <div class="col">
+      <div class="d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">
+          <i class="fas fa-circle text-danger me-2" style="animation: blink 1s infinite;"></i>
+          ライブ配信中「<%= @yoga_class.name %>」
+        </h4>
+        <div class="text-end">
+          <small>開始時刻: <%= @yoga_class.start_time.strftime("%Y年%m月%d日 %H:%M") %></small><br>
+          <small>講師: <%= @yoga_class.instructor %></small><br>
+          <small>現在の参加者: <span id="participants-count"><%= @current_participants %></span>名</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- メインコンテンツ -->
+  <div class="row">
+    <!-- 映像エリア -->
+    <div class="col-lg-8 mb-4">
+      <div class="card shadow">
+        <div class="card-header bg-dark text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-video me-2"></i>ライブ映像
+          </h5>
+        </div>
+        <div class="card-body p-0">
+          <div class="ratio ratio-16x9">
+            <% if @yoga_class.youtube_live_id.present? %>
+              <iframe
+                src="https://www.youtube.com/embed/<%= @yoga_class.youtube_live_id %>?autoplay=1&mute=0"
+                title="<%= @yoga_class.name %> ライブ配信"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen>
+              </iframe>
+            <% else %>
+              <div class="d-flex align-items-center justify-content-center bg-secondary text-white">
+                <div class="text-center">
+                  <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                  <h5>映像の準備中です</h5>
+                  <p>しばらくお待ちください</p>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <!-- 操作パネル -->
+      <div class="card mt-3">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <span class="badge bg-success me-2">
+                <i class="fas fa-users me-1"></i>
+                参加者 <span id="participants-badge"><%= @current_participants %></span>名
+              </span>
+              <span class="badge bg-info">
+                <i class="fas fa-clock me-1"></i>
+                配信時間 <span id="live-duration">00:00</span>
+              </span>
+              <span class="badge bg-warning">
+                <i class="fas fa-eye me-1"></i>
+                視聴時間 <span id="viewing-duration">00:00</span>
+              </span>
+            </div>
+            <div>
+              <button id="leave-live-btn" class="btn btn-danger">
+                <i class="fas fa-sign-out-alt me-2"></i>退出する
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- チャットエリア -->
+    <div class="col-lg-4">
+      <div class="card shadow h-100">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-comments me-2"></i>チャット
+          </h5>
+        </div>
+        <div class="card-body d-flex flex-column p-0">
+          <!-- チャットメッセージ表示エリア -->
+          <div id="chat-messages" class="flex-grow-1 p-3" style="height: 400px; overflow-y: auto; background-color: #f8f9fa;">
+            <div class="text-center text-muted mb-3">
+              <small>
+                <i class="fas fa-info-circle me-1"></i>
+                チャットでクラスの感想や質問を共有しましょう！
+              </small>
+            </div>
+            <!-- 初期メッセージ -->
+            <div class="chat-message mb-2">
+              <div class="d-flex">
+                <div class="flex-shrink-0">
+                  <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                    <i class="fas fa-robot text-white small"></i>
+                  </div>
+                </div>
+                <div class="flex-grow-1 ms-2">
+                  <div class="bg-white rounded p-2 shadow-sm">
+                    <div class="d-flex justify-content-between align-items-start">
+                      <small class="fw-bold text-primary">システム</small>
+                      <small class="text-muted"><%= Time.current.strftime("%H:%M") %></small>
+                    </div>
+                    <div class="mt-1">
+                      <small>「<%= @yoga_class.name %>」のライブ配信が開始されました。皆さん、よろしくお願いします！</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- チャット入力フォーム -->
+          <div class="border-top p-3">
+            <form id="chat-form" class="d-flex">
+              <input 
+                type="text" 
+                id="chat-input" 
+                class="form-control me-2" 
+                placeholder="メッセージを入力..."
+                maxlength="200"
+                autocomplete="off">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-paper-plane"></i>
+              </button>
+            </form>
+            <small class="text-muted">
+              <i class="fas fa-info-circle me-1"></i>
+              ※現在は簡易チャット機能です。次のステップでリアルタイム機能を実装します。
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- カスタムCSS -->
+<style>
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.3; }
+}
+
+.chat-message {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#chat-messages {
+  scroll-behavior: smooth;
+}
+
+.ratio-16x9 {
+  --bs-aspect-ratio: 56.25%;
+}
+</style>
+
+<!-- 退出確認モーダル -->
+<div class="modal fade" id="leaveConfirmModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">ライブ配信を退出</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>ライブ配信を退出しますか？</p>
+        <p><small class="text-muted">※再度参加することも可能です</small></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+        <button type="button" class="btn btn-danger" id="confirm-leave-btn">退出する</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const participantsCount = document.getElementById('participants-count');
+  const participantsBadge = document.getElementById('participants-badge');
+  const leaveLiveBtn = document.getElementById('leave-live-btn');
+  const confirmLeaveBtn = document.getElementById('confirm-leave-btn');
+  const leaveModal = new bootstrap.Modal(document.getElementById('leaveConfirmModal'));
+  const liveDuration = document.getElementById('live-duration');
+  const viewingDuration = document.getElementById('viewing-duration');
+  
+  // ライブ配信開始時刻とユーザー参加時刻
+  const startTime = new Date('<%= @yoga_class.start_time.iso8601 %>');
+  const joinTime = new Date('<%= @participation.joined_at.iso8601 %>');
+  
+  // 配信時間とユーザー視聴時間の更新
+  function updateDurations() {
+    const now = new Date();
+    
+    // 配信時間
+    const liveDiff = Math.max(0, now - startTime);
+    const liveMinutes = Math.floor(liveDiff / 60000);
+    const liveSeconds = Math.floor((liveDiff % 60000) / 1000);
+    liveDuration.textContent = `${liveMinutes.toString().padStart(2, '0')}:${liveSeconds.toString().padStart(2, '0')}`;
+    
+    // 視聴時間
+    const viewDiff = Math.max(0, now - joinTime);
+    const viewMinutes = Math.floor(viewDiff / 60000);
+    const viewSeconds = Math.floor((viewDiff % 60000) / 1000);
+    viewingDuration.textContent = `${viewMinutes.toString().padStart(2, '0')}:${viewSeconds.toString().padStart(2, '0')}`;
+  }
+  
+  // 1秒ごとに時間を更新
+  setInterval(updateDurations, 1000);
+  updateDurations();
+  
+  // 参加者数の定期更新
+  function updateParticipantsCount() {
+    fetch(`/yoga_classes/<%= @yoga_class.id %>/join_live`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        participantsCount.textContent = data.participants_count;
+        participantsBadge.textContent = data.participants_count;
+      }
+    })
+    .catch(error => console.error('Error:', error));
+  }
+  
+  // 30秒ごとに参加者数を更新
+  setInterval(updateParticipantsCount, 30000);
+  
+  // 退出ボタンのクリック処理
+  leaveLiveBtn.addEventListener('click', function() {
+    leaveModal.show();
+  });
+  
+  // 退出確認ボタンのクリック処理
+  confirmLeaveBtn.addEventListener('click', function() {
+    fetch(`/yoga_classes/<%= @yoga_class.id %>/leave_live`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        window.location.href = '/yoga_classes/<%= @yoga_class.id %>';
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      window.location.href = '/yoga_classes/<%= @yoga_class.id %>';
+    });
+  });
+  
+  // ページを離れる前の確認
+  window.addEventListener('beforeunload', function(e) {
+    // 退出処理を送信（非同期）
+    navigator.sendBeacon(`/yoga_classes/<%= @yoga_class.id %>/leave_live`, 
+      new FormData().append('_method', 'DELETE'));
+  });
+});
+</script>

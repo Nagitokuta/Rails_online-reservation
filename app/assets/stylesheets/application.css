@@ -1,10 +1,56 @@
 /*
- * This is a manifest file that'll be compiled into application.css.
+ * This is a manifest file that'll be compiled into application.css, which will include all the files
+ * listed below.
  *
- * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
- * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
- * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
- * depending on specificity.
+ * Any CSS and SCSS file within this directory, lib/assets/stylesheets, or any plugin's
+ * vendor/assets/stylesheets directory can be referenced here using a relative path.
  *
- * Consider organizing styles into separate files for maintainability.
+ * You're free to add application-wide styles to this file and they'll appear at the bottom of the
+ * compiled file so the styles you add here take precedence over styles defined in any other CSS/SCSS
+ * files in this directory. Styles in this file should be added after the last require_* statement.
+ * It is generally better to create a new file per style scope.
+ *
+ *= require_tree .
+ *= require_self
  */
+
+/* カスタムスタイル */
+body {
+  font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+}
+
+.navbar-brand {
+  font-weight: bold;
+  color: #2c5aa0 !important;
+}
+
+.btn-primary {
+  background-color: #2c5aa0;
+  border-color: #2c5aa0;
+}
+
+.btn-primary:hover {
+  background-color: #1e3d6f;
+  border-color: #1e3d6f;
+}
+
+.card {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.alert {
+  border-radius: 0;
+}
+
+/* ヨガらしい色合いの追加 */
+.yoga-primary {
+  color: #2c5aa0;
+}
+
+.yoga-secondary {
+  color: #6c757d;
+}
+
+.bg-yoga-light {
+  background-color: #f8f9fa;
+}

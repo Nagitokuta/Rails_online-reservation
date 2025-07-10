@@ -1,14 +1,30 @@
+# config/routes.rb
 Rails.application.routes.draw do
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+  devise_for :users
+  root "yoga_classes#index"
 
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
-  get "up" => "rails/health#show", as: :rails_health_check
+  resources :yoga_classes, only: [ :index, :show ] do
+    member do
+      get "live"
+      post "join_live"
+      delete "leave_live"
+    end
 
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
+    # フィードバック関連のルート
+    resources :feedbacks, only: [ :new, :create, :show ]
+  end
 
-  # Defines the root path route ("/")
-  # root "posts#index"
+  resources :reservations, only: [ :create, :destroy ]
+
+  # カレンダー関連のルート
+  get "calendar", to: "calendars#index"
+  get "calendar/day", to: "calendars#day", as: "calendar_day"
+
+  # マイページ関連のルート
+  get "mypage", to: "users#show", as: "mypage"
+  get "mypage/edit", to: "users#edit", as: "edit_user"
+  patch "mypage", to: "users#update"
+  get "mypage/password", to: "users#edit_password", as: "edit_user_path_password"
+  patch "mypage/password", to: "users#update_password"
+  get "mypage/feedbacks", to: "users#feedbacks", as: "user_feedbacks"
 end

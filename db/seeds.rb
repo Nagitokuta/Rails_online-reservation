@@ -1,9 +1,30 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+# db/seeds.rb に追加
+# テスト用のライブ配信クラス
+live_class = YogaClass.create!(
+  name: "朝ヨガライブ",
+  description: "朝の目覚めを促すストレッチ中心のライブクラスです。初心者向け。",
+  start_time: 1.hour.from_now,
+  instructor: "佐藤先生",
+  capacity: 30,
+  youtube_live_id: "jfKfPfyJRdk", # YouTubeのサンプル動画ID
+  live_status: "live"
+)
+
+live_class = YogaClass.create!(
+  name: "今日ヨガライブ",
+  description: "テスト",
+  start_time: 1.hour.from_now,
+  instructor: "佐藤先生",
+  capacity: 30,
+  youtube_live_id: "jfKfPfyJRdk", # YouTubeのサンプル動画ID
+  live_status: "live"
+)
+
+# 現在のユーザーで予約を作成（テスト用）
+if User.exists?
+  user = User.first
+  Reservation.create!(
+    user: user,
+    yoga_class: live_class
+  )
+end

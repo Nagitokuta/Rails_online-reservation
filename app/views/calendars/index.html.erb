@@ -1,0 +1,108 @@
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-10">
+      <h2 class="mb-4 text-center">予約カレンダー</h2>
+      <!-- 月切り替えナビゲーション -->
+      <div class="calendar-nav mb-4 text-center">
+        <% prev_month = @month == 1 ? 12 : @month - 1 %>
+        <% prev_year = @month == 1 ? @year - 1 : @year %>
+        <% next_month = @month == 12 ? 1 : @month + 1 %>
+        <% next_year = @month == 12 ? @year + 1 : @year %>
+        <%= link_to calendar_path(year: prev_year, month: prev_month), class: "btn btn-outline-secondary btn-sm me-3" do %>
+          <i class="fas fa-chevron-left"></i> 前月
+        <% end %>
+        <span class="h4 mx-4"><%= @year %>年 <%= @month %>月</span>
+        <%= link_to calendar_path(year: next_year, month: next_month), class: "btn btn-outline-secondary btn-sm ms-3" do %>
+          次月 <i class="fas fa-chevron-right"></i>
+        <% end %>
+      </div>
+      <!-- カレンダー本体 -->
+      <div class="card">
+        <div class="card-body p-0">
+          <table class="table table-bordered calendar-table mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="text-center text-danger">日</th>
+                <th class="text-center">月</th>
+                <th class="text-center">火</th>
+                <th class="text-center">水</th>
+                <th class="text-center">木</th>
+                <th class="text-center">金</th>
+                <th class="text-center text-primary">土</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% first_day = Date.new(@year, @month, 1) %>
+              <% last_day = first_day.end_of_month %>
+              <% start_wday = first_day.wday %>
+              <% current_date = first_day - start_wday.days %>
+              <% 6.times do %>
+                <tr>
+                  <% 7.times do |wday| %>
+                    <% is_current_month = current_date.month == @month %>
+                    <% is_today = current_date == Date.current %>
+                    <% is_reserved = @reserved_dates.include?(current_date) %>
+                    <td class="calendar-cell <%= 'other-month' unless is_current_month %> <%= 'today' if is_today %> <%= 'reserved' if is_reserved && is_current_month %>">
+                      <% if is_current_month %>
+                        <% if is_reserved %>
+                          <%= link_to calendar_day_path(year: @year, month: @month, day: current_date.day), 
+                                      class: "calendar-link reserved-link" do %>
+                            <span class="day-number"><%= current_date.day %></span>
+                            <span class="reserved-mark">●</span>
+                          <% end %>
+                        <% else %>
+                          <span class="calendar-link">
+                            <span class="day-number"><%= current_date.day %></span>
+                          </span>
+                        <% end %>
+                      <% else %>
+                        <span class="calendar-link text-muted">
+                          <span class="day-number"><%= current_date.day %></span>
+                        </span>
+                      <% end %>
+                    </td>
+                    <% current_date += 1.day %>
+                  <% end %>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <!-- 説明 -->
+      <div class="mt-3 text-center">
+        <small class="text-muted">
+          <span class="reserved-mark">●</span> 予約済みクラスがある日
+        </small>
+      </div>
+      <!-- 今月の予約一覧 -->
+      <% if @reservations.any? %>
+        <div class="card mt-4">
+          <div class="card-header">
+            <h5 class="card-title mb-0">今月の予約クラス</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <% @reservations.each do |reservation| %>
+                <div class="col-md-6 mb-3">
+                  <div class="card border-primary">
+                    <div class="card-body">
+                      <h6 class="card-title"><%= reservation.yoga_class.name %></h6>
+                      <p class="card-text">
+                        <small class="text-muted">
+                          <%= reservation.yoga_class.start_time.strftime("%m月%d日 %H:%M") %><br>
+                          講師: <%= reservation.yoga_class.instructor %>
+                        </small>
+                      </p>
+                      <%= link_to "詳細を見る", yoga_class_path(reservation.yoga_class), class: "btn btn-primary btn-sm" %>
+                    </div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

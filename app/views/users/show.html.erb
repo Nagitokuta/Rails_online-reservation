@@ -1,0 +1,138 @@
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-10">
+      <h2 class="mb-4">マイページ</h2>
+      <!-- 登録情報カード -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="card-title mb-0">登録情報</h5>
+        </div>
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-sm-3">
+              <strong>ユーザー名：</strong>
+            </div>
+            <div class="col-sm-6">
+              <%= @user.username %>
+            </div>
+            <div class="col-sm-3">
+              <%= link_to "編集", edit_user_path, class: "btn btn-sm btn-outline-primary" %>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-sm-3">
+              <strong>メールアドレス：</strong>
+            </div>
+            <div class="col-sm-9">
+              <%= @user.email %>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-3">
+              <strong>パスワード：</strong>
+            </div>
+            <div class="col-sm-6">
+              **********
+            </div>
+            <div class="col-sm-3">
+              <%= link_to "変更", edit_user_password_path, class: "btn btn-sm btn-outline-secondary" %>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 今後の予約カード -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="card-title mb-0">今後の予約</h5>
+        </div>
+        <div class="card-body">
+          <% if @upcoming_reservations.any? %>
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>クラス名</th>
+                    <th>日時</th>
+                    <th>講師</th>
+                    <th>予約日</th>
+                    <th>アクション</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% @upcoming_reservations.each do |reservation| %>
+                    <tr>
+                      <td>
+                        <strong><%= reservation.yoga_class.name %></strong>
+                        <br>
+                        <small class="text-muted"><%= truncate(reservation.yoga_class.description, length: 50) %></small>
+                      </td>
+                      <td><%= reservation.yoga_class.start_time.strftime("%Y年%m月%d日<br>%H:%M").html_safe %></td>
+                      <td><%= reservation.yoga_class.instructor %></td>
+                      <td><%= reservation.created_at.strftime("%m/%d") %></td>
+                      <td>
+                        <% if reservation.yoga_class.start_time <= 1.hour.from_now && reservation.yoga_class.start_time > Time.current %>
+                          <%= link_to "ライブ配信に参加", "#", class: "btn btn-success btn-sm mb-1" %>
+                          <br>
+                        <% end %>
+                        <%= link_to "キャンセル", reservation_path(reservation), 
+                                    method: :delete, 
+                                    class: "btn btn-outline-danger btn-sm",
+                                    data: { 
+                                      confirm: "#{reservation.yoga_class.name}の予約をキャンセルしますか？" 
+                                    } %>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          <% else %>
+            <p class="text-muted">現在、予約しているクラスはありません。</p>
+            <%= link_to "クラス一覧を見る", root_path, class: "btn btn-primary" %>
+          <% end %>
+        </div>
+      </div>
+      <!-- 過去の予約カード -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">過去の予約履歴</h5>
+        </div>
+        <div class="card-body">
+          <% if @past_reservations.any? %>
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>クラス名</th>
+                    <th>日時</th>
+                    <th>講師</th>
+                    <th>フィードバック</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% @past_reservations.each do |reservation| %>
+                    <tr>
+                      <td>
+                        <strong><%= reservation.yoga_class.name %></strong>
+                        <br>
+                        <small class="text-muted"><%= truncate(reservation.yoga_class.description, length: 50) %></small>
+                      </td>
+                      <td><%= reservation.yoga_class.start_time.strftime("%Y年%m月%d日<br>%H:%M").html_safe %></td>
+                      <td><%= reservation.yoga_class.instructor %></td>
+                      <td>
+                        <!-- フィードバック機能は次のステップで実装 -->
+                        <span class="badge bg-secondary">未実装</span>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          <% else %>
+            <p class="text-muted">過去の予約履歴はありません。</p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

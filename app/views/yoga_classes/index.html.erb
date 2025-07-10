@@ -1,0 +1,72 @@
+<!-- app/views/yoga_classes/index.html.erb -->
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <h2 class="mb-4">開催予定のヨガクラス一覧</h2>
+      <% if @yoga_classes.any? %>
+        <div class="row">
+          <% @yoga_classes.each do |yoga_class| %>
+            <div class="col-md-6 col-lg-4 mb-4">
+              <div class="card h-100">
+                <div class="card-body">
+                  <h5 class="card-title"><%= yoga_class.name %></h5>
+                  <p class="card-text"><%= yoga_class.description %></p>
+                  <ul class="list-unstyled">
+                    <li><strong>日時：</strong><%= yoga_class.start_time.strftime("%Y年%m月%d日 %H:%M") %></li>
+                    <li><strong>講師：</strong><%= yoga_class.instructor %></li>
+                    <li><strong>定員：</strong><%= yoga_class.capacity %>名</li>
+                  </ul>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <% if yoga_class.full? %>
+                        <span class="badge bg-danger">満席</span>
+                      <% elsif current_user.reserved_yoga_class?(yoga_class) %>
+                        <span class="badge bg-success">予約済み</span>
+                      <% else %>
+                        <span class="badge bg-primary">予約可能</span>
+                        <small class="text-muted">残り<%= yoga_class.available_spots %>席</small>
+                      <% end %>
+                    </div>
+                    <div>
+                      <%= link_to "詳細を見る", yoga_class_path(yoga_class), class: "btn btn-outline-primary btn-sm me-2" %>
+                      <div>
+                        <% if yoga_class.full? %>
+                          <button class="btn btn-secondary btn-sm" disabled>満席</button>
+                        <% elsif current_user.reserved_yoga_class?(yoga_class) %>
+                          <% reservation = current_user.reservation_for(yoga_class) %>
+                          <%= link_to "キャンセル", reservation_path(reservation), 
+                                    method: :delete, 
+                                    class: "btn btn-outline-danger btn-sm",
+                                    data: { 
+                                      confirm: "#{yoga_class.name}の予約をキャンセルしますか？" 
+                                    } %>
+                        <% else %>
+                          <%= button_to "予約する", 
+                                      reservations_path, 
+                                      params: { yoga_class_id: yoga_class.id },
+                                      method: :post, 
+                                      class: "btn btn-primary btn-sm reservation-btn",
+                                      data: { 
+                                        yoga_class_name: yoga_class.name,
+                                        yoga_class_time: yoga_class.start_time.strftime("%Y年%m月%d日 %H:%M"),
+                                        yoga_class_instructor: yoga_class.instructor,
+                                        confirm: "#{yoga_class.name}（#{yoga_class.start_time.strftime('%m/%d %H:%M')}）を予約しますか？"
+                                      } %>
+                        <% end %>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="alert alert-info" role="alert">
+          <h4 class="alert-heading">クラスが見つかりません</h4>
+          <p>現在、開催予定のヨガクラスはありません。</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

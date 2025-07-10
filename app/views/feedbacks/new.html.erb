@@ -1,0 +1,242 @@
+<!-- app/views/feedbacks/new.html.erb -->
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <!-- パンくずナビ -->
+      <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><%= link_to "ホーム", root_path %></li>
+          <li class="breadcrumb-item"><%= link_to "クラス詳細", @yoga_class %></li>
+          <li class="breadcrumb-item active" aria-current="page">フィードバック送信</li>
+        </ol>
+      </nav>
+      <!-- メインカード -->
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h4 class="card-title mb-0">
+            <i class="fas fa-comment-dots me-2"></i>
+            フィードバック送信
+          </h4>
+        </div>
+        <div class="card-body">
+          <!-- クラス情報 -->
+          <div class="bg-light p-3 rounded mb-4">
+            <h5 class="text-primary mb-2">
+              <i class="fas fa-om me-2"></i><%= @yoga_class.name %>
+            </h5>
+            <div class="row">
+              <div class="col-md-6">
+                <small class="text-muted">
+                  <i class="fas fa-calendar me-1"></i>
+                  <%= @yoga_class.start_time.strftime("%Y年%m月%d日 %H:%M") %>
+                </small>
+              </div>
+              <div class="col-md-6">
+                <small class="text-muted">
+                  <i class="fas fa-user me-1"></i>
+                  <%= @yoga_class.instructor %>
+                </small>
+              </div>
+            </div>
+          </div>
+          <!-- フィードバックフォーム -->
+          <%= form_with(model: [@yoga_class, @feedback], local: true, class: "needs-validation", novalidate: true) do |form| %>
+            <!-- 星評価 -->
+            <div class="mb-4">
+              <label class="form-label fw-bold">
+                <i class="fas fa-star me-2 text-warning"></i>
+                クラスはいかがでしたか？
+              </label>
+              <div id="star-rating" class="mb-2">
+                <% 1.upto(5) do |i| %>
+                  <span class="star" data-value="<%= i %>" role="button" tabindex="0">
+                    <i class="fas fa-star"></i>
+                  </span>
+                <% end %>
+              </div>
+              <%= form.hidden_field :rating, id: "feedback_rating" %>
+              <div class="rating-text text-muted mb-2" id="rating-text"></div>
+              <% if @feedback.errors[:rating].present? %>
+                <div class="invalid-feedback d-block">
+                  <i class="fas fa-exclamation-triangle me-1"></i>
+                  <%= @feedback.errors[:rating].first %>
+                </div>
+              <% end %>
+            </div>
+            <!-- コメント -->
+            <div class="mb-4">
+              <%= form.label :comment, class: "form-label fw-bold" do %>
+                <i class="fas fa-comment me-2 text-info"></i>
+                コメント
+              <% end %>
+              <%= form.text_area :comment, 
+                                 class: "form-control #{'is-invalid' if @feedback.errors[:comment].present?}", 
+                                 rows: 5, 
+                                 placeholder: "クラスの感想や改善点などをお聞かせください...",
+                                 maxlength: 1000 %>
+              <div class="form-text">
+                <span id="comment-count">0</span>/1000文字
+              </div>
+              <% if @feedback.errors[:comment].present? %>
+                <div class="invalid-feedback">
+                  <i class="fas fa-exclamation-triangle me-1"></i>
+                  <%= @feedback.errors[:comment].first %>
+                </div>
+              <% end %>
+            </div>
+            <!-- 送信ボタン -->
+            <div class="d-flex justify-content-between">
+              <%= link_to @yoga_class, class: "btn btn-outline-secondary" do %>
+                <i class="fas fa-arrow-left me-2"></i>戻る
+              <% end %>
+              <%= form.submit "フィードバックを送信", 
+                              class: "btn btn-primary btn-lg",
+                              data: { 
+                                confirm: "フィードバックを送信しますか？送信後は変更できません。" 
+                              } do %>
+                <i class="fas fa-paper-plane me-2"></i>送信
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+      <!-- 注意事項 -->
+      <div class="card mt-4">
+        <div class="card-body">
+          <h6 class="card-title">
+            <i class="fas fa-info-circle me-2 text-info"></i>
+            フィードバックについて
+          </h6>
+          <ul class="list-unstyled mb-0">
+            <li><i class="fas fa-check text-success me-2"></i>フィードバックは1つのクラスにつき1回のみ送信可能です</li>
+            <li><i class="fas fa-check text-success me-2"></i>送信後の変更・削除はできません</li>
+            <li><i class="fas fa-check text-success me-2"></i>いただいたフィードバックはサービス改善に活用させていただきます</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- JavaScript -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const stars = document.querySelectorAll('.star');
+    const ratingInput = document.getElementById('feedback_rating');
+    const ratingText = document.getElementById('rating-text');
+    const commentTextarea = document.querySelector('#feedback_comment');
+    const commentCount = document.getElementById('comment-count');
+
+    const ratingTexts = {
+      1: '😞 とても悪い',
+      2: '😕 悪い',
+      3: '😐 普通',
+      4: '😊 良い',
+      5: '😍 とても良い'
+    };
+
+    // 星評価の処理
+    stars.forEach((star, index) => {
+      star.addEventListener('mouseover', function() {
+        highlightStars(index + 1);
+      });
+
+      star.addEventListener('mouseout', function() {
+        highlightStars(parseInt(ratingInput.value) || 0);
+      });
+
+      star.addEventListener('click', function() {
+        const rating = index + 1;
+        ratingInput.value = rating;
+        highlightStars(rating);
+        updateRatingText(rating);
+      });
+
+      // キーボード対応
+      star.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          star.click();
+        }
+      });
+    });
+
+    function highlightStars(count) {
+      stars.forEach((star, index) => {
+        const icon = star.querySelector('i');
+        if (index < count) {
+          icon.className = 'fas fa-star';
+          star.style.color = '#ffc107';
+        } else {
+          icon.className = 'far fa-star';
+          star.style.color = '#dee2e6';
+        }
+      });
+    }
+
+    function updateRatingText(rating) {
+      if (rating > 0) {
+        ratingText.textContent = ratingTexts[rating];
+        ratingText.style.display = 'block';
+      } else {
+        ratingText.style.display = 'none';
+      }
+    }
+
+    // 文字数カウント
+    if (commentTextarea) {
+      commentTextarea.addEventListener('input', function() {
+        const count = this.value.length;
+        commentCount.textContent = count;
+
+        if (count > 1000) {
+          commentCount.style.color = '#dc3545';
+        } else if (count > 800) {
+          commentCount.style.color = '#fd7e14';
+        } else {
+          commentCount.style.color = '#6c757d';
+        }
+      });
+
+      // 初期値の設定
+      commentCount.textContent = commentTextarea.value.length;
+    }
+
+    // 初期表示
+    const initialRating = parseInt(ratingInput.value) || 0;
+    highlightStars(initialRating);
+    updateRatingText(initialRating);
+  });
+</script>
+<!-- カスタムCSS -->
+<style>
+  .star {
+    font-size: 2rem;
+    cursor: pointer;
+    color: #dee2e6;
+    transition: color 0.2s ease;
+    margin-right: 0.25rem;
+  }
+
+  .star:hover {
+    transform: scale(1.1);
+  }
+
+  .star:focus {
+    outline: 2px solid #0d6efd;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  #rating-text {
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+
+  .needs-validation .form-control:invalid {
+    border-color: #dc3545;
+  }
+
+  .needs-validation .form-control:valid {
+    border-color: #198754;
+  }
+</style>

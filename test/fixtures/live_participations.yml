@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  yoga_class: one
+  joined_at: 2025-07-10 03:54:29
+  left_at: 2025-07-10 03:54:29
+
+two:
+  user: two
+  yoga_class: two
+  joined_at: 2025-07-10 03:54:29
+  left_at: 2025-07-10 03:54:29

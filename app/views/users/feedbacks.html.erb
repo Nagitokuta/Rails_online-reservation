@@ -1,0 +1,54 @@
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-12">
+      <h3>
+        <i class="fas fa-comment-dots me-2 text-primary"></i>
+        フィードバック履歴
+      </h3>
+      <hr>
+      <% if @feedbacks.any? %>
+        <% @feedbacks.each do |feedback| %>
+          <div class="card mb-3">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h6 class="card-title mb-0">
+                  <%= link_to feedback.yoga_class.name, feedback.yoga_class, class: "text-decoration-none" %>
+                </h6>
+                <small class="text-muted">
+                  <%= feedback.created_at.strftime("%Y年%m月%d日") %>
+                </small>
+              </div>
+              <div class="mb-2">
+                <span class="text-warning me-2">
+                  <%= feedback.rating_stars %>
+                </span>
+                <span class="badge bg-secondary">
+                  <%= feedback.rating_text %>
+                </span>
+              </div>
+              <p class="card-text">
+                <%= simple_format(feedback.comment) %>
+              </p>
+              <div class="text-muted small">
+                <i class="fas fa-calendar me-1"></i>
+                クラス日時: <%= feedback.yoga_class.start_time.strftime("%Y年%m月%d日 %H:%M") %>
+                <span class="ms-3">
+                  <i class="fas fa-user me-1"></i>
+                  講師: <%= feedback.yoga_class.instructor %>
+                </span>
+              </div>
+            </div>
+          </div>
+        <% end %>
+        <%= paginate @feedbacks if respond_to?(:paginate) %>
+      <% else %>
+        <div class="text-center py-5">
+          <i class="fas fa-comment-slash fa-3x text-muted mb-3"></i>
+          <h5 class="text-muted">フィードバック履歴がありません</h5>
+          <p class="text-muted">クラス受講後にフィードバックを送信してみましょう！</p>
+          <%= link_to "クラス一覧を見る", root_path, class: "btn btn-primary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

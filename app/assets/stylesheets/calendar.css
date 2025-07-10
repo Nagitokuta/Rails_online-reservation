@@ -1,0 +1,90 @@
+.calendar-table {
+  font-size: 14px;
+}
+
+.calendar-table th {
+  height: 40px;
+  vertical-align: middle;
+  font-weight: 600;
+}
+
+.calendar-cell {
+  height: 80px;
+  vertical-align: top;
+  padding: 8px;
+  position: relative;
+  border: 1px solid #dee2e6;
+}
+
+.calendar-cell.other-month {
+  background-color: #f8f9fa;
+  color: #6c757d;
+}
+
+.calendar-cell.today {
+  background-color: #fff3cd;
+  border-color: #ffc107;
+}
+
+.calendar-cell.reserved {
+  background-color: #d1ecf1;
+  border-color: #bee5eb;
+}
+
+.calendar-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+  width: 100%;
+}
+
+.calendar-link:hover {
+  text-decoration: none;
+  color: inherit;
+}
+
+.reserved-link:hover {
+  background-color: rgba(0, 123, 255, 0.1);
+  border-radius: 4px;
+}
+
+.day-number {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.reserved-mark {
+  color: #007bff;
+  font-size: 18px;
+  font-weight: bold;
+  position: absolute;
+  top: 5px;
+  right: 8px;
+}
+
+.calendar-nav {
+  margin-bottom: 20px;
+}
+
+.calendar-nav .btn {
+  min-width: 80px;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .calendar-cell {
+    height: 60px;
+    padding: 4px;
+  }
+  
+  .day-number {
+    font-size: 14px;
+  }
+  
+  .reserved-mark {
+    font-size: 16px;
+    top: 2px;
+    right: 4px;
+  }
+}
