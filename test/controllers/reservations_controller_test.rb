@@ -1,13 +1,14 @@
+# test/controllers/calendars_controller_test.rb
 require "test_helper"
 
-class ReservationsControllerTest < ActionDispatch::IntegrationTest
-  test "should get create" do
-    get reservations_create_url
+class CalendarsControllerTest < ActionDispatch::IntegrationTest
+  test "should get day" do
+    get calendar_day_path
     assert_response :success
   end
 
-  test "should get destroy" do
-    get reservations_destroy_url
+  test "should get index" do
+    get calendar_path
     assert_response :success
   end
 end
